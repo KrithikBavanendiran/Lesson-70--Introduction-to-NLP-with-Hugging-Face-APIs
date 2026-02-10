@@ -1,21 +1,38 @@
 from transformers import pipeline
 
-classifier = pipeline(
-    "zero-shot-classification",
-    model="facebook/bart-large-mnli"
-)
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
-data = [
-    "Congratulations! You won a free iPhone. Click the link now!",
-    "Hey, are we still meeting for homework later?"
-]
+def classify_message(message):
+    """
+    Classifies a message as 'Safe' or 'Spam' using zero-shot classification.
 
-labels = ["spam message", "safe message"]
+    Args:
+        message (str): The input message to classify.
 
-for text in data:
-    result = classifier(text, labels)
-    label = result["labels"][0]
-    confidence = result["scores"][0]
+    Returns:
+        str: The classification result ('Safe' or 'Spam').
+    """
+    # Use more descriptive candidate labels
+    candidate_labels = ["This is a safe message", "This is a spam message"]
 
-    print(f"Message: {text}")
-    print(f"Label: {'Spam' if 'spam' in label else 'Safe'}, Confidence: {confidence:.2f}\n")
+    # Perform classification
+    result = classifier(message, candidate_labels)
+
+    # Extract the label with the highest score
+    classification = result["labels"][0]
+    score = result["scores"][0]
+
+    # Map the descriptive labels back to "Safe" or "Spam"
+    if classification == "This is a safe message":
+        classification = "Safe"
+    else:
+        classification = "Spam"
+
+    print(f"Message: {message}")
+    print(f"Classification: {classification} (Confidence: {score:.2f})")
+
+    return classification
+
+if __name__ == "__main__":
+    message = input("Enter a message to classify: ")
+    classify_message(message)
